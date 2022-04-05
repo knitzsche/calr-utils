@@ -9,12 +9,40 @@ top2 = []
 data1 = dict() # key is column header, val is col data list
 data2 = dict() # key is column header, val is col data list
 
+def help():
+    print("Description:")
+    print("    The program creates a new CalR CSV file that contains the specified subject IDs' data columns.")
+    print("    Two input CalR CSV files are required.")
+    print("    Input CalR files must have column headers in this format: testname_subjectID.")
+    print("        For example: 'allmeters_14L20NA,allmeters_15L20NA,pedmeters_16L20NA,'")
+    print("        Where the tests from that are 'allmeters', and 'pedmeters'.") 
+    print("        Where the subject IDs from that are '14L20NA', '15L20NA' and '16L20NA'") 
+    print("Four args are required:")
+    print("    Args 1, 2: Input CalrR CSV files that contain data columns for the desired test_subjectID")
+    print("    Arg 3: Subject IDs you want included. Put them inside quote marks and delimit with commas:")
+    print("        Example: \"L5A,L10A,L15A\"")
+    print("    Arg4: The created calr file.")
 
 if __name__ == "__main__":
 
-    if len(sys.argv) < 3:
-        print("error. two args needs where each names a csv files")
+    if len(sys.argv) == 2:
+        if sys.argv[1] == "help":
+            help()
+        if sys.argv[1] == "-h":
+            help()
+        if sys.argv[1] == "--help":
+            help()
+        sys.exit()
+    if len(sys.argv) < 5:
+        help()
         sys.exit(1)
+
+    print("1: ", sys.argv[1])
+    print("2: ", sys.argv[2])
+    print("3: ", sys.argv[3])
+    print("4: ", sys.argv[4])
+    #sys.exit()
+    out_file = sys.argv[4]
 
     with open(sys.argv[1], newline='') as f:
         reader = csv.reader(f)
@@ -50,34 +78,50 @@ if __name__ == "__main__":
     data = dict()
     data.update(data1)
     data.update(data2)
-    #for k in data2:
-    #    print(data2[k])
 
-    #sub1 = [ "10L35A","11L35A","12L35A","13L20NA","14L20NA","15L20NA","16L20NA","16L20NA","1L5A","2L5A","3L5A","4L5A","5L10A","6L10A","7L10A","8L10A","9L35A"]
-    sub1 = ["L5A","L10A","L15A"]
+    # the CalR subject IDs
+    subject_ids = sys.argv[3].split(",")
 
     lines = []
     matched = []
+    num_cols = len(data.keys())
+    line = ''
+
+    #make first line from matching keys
     for k in data:
-        for sub in sub1:
-            if k.endswith(sub):
+        for sub in subject_ids:
+            if k.endswith(sub): #the CalR column header ends with a target subject ID
                 matched.append(k)
-                #print(k)
-                #line = k+","
-                for val in data[k]:
-                    line += val+","        
-                    print(line)
-                lines.append(line)
-                # remove trailing comma
-                lines[len(lines)-1]=lines[len(lines-1)][:-1]
-    #for line in lines:
-    #    print(line)
-   #     continue
-  #      f = open('calr.csv', 'w')
-  #      f.write(line)
-  #      f.write("\n")
-  #      f.flush()
-  #      f.close()
-        
-    print(len(data.keys()))   
-    #print(matched)   
+                line += k+","
+    lines.append(line)
+    line = ''
+   
+    # add data
+    idx = -1
+    num_out_of_data = 0 # tracks the number of matched lists that are fully processed
+    # when num_of_data = len(matched), done: quit looping
+    while True:
+        #print(idx, num_out_of_data, len(matched)) 
+        if num_out_of_data == len(matched): break
+        idx = idx+ 1
+        for k in matched:
+            if len(data[k]) >= idx + 1:
+                line += data[k][idx] + ","
+                continue
+            else:
+                #print('sub: {} num_out_of_data {}'.format(k, num_out_of_data))
+                num_out_of_data += 1
+        lines.append(line)
+        line = ''
+                    
+    lines_final = []
+    #remove trailing comma on each line
+    for line in lines:
+        lines_final.append(line[:-1])
+    f = open(out_file, 'w')
+    for line in lines_final:
+        f.write(line)
+        f.write("\n")
+    f.flush()
+    f.close()
+    sys.exit()
