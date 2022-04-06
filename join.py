@@ -19,9 +19,10 @@ def help():
     print("        Where the subject IDs from that are '14L20NA', '15L20NA' and '16L20NA'") 
     print("Four args are required:")
     print("    Args 1, 2: Input CalrR CSV files that contain data columns for the desired test_subjectID")
-    print("    Arg 3: Subject IDs you want included. Put them inside quote marks and delimit with commas:")
+    print("    Arg 3: Common *ending* of subject IDs you want included. Put them inside quote marks and delimit with commas:")
     print("        Example: \"L5A,L10A,L15A\"")
-    print("    Arg4: The created calr file.")
+    print("        Note: that is the *common ending* of subject IDs. Acutal IDs could be, for example \"1L5A,2L5A,4L15A... \"")
+    print("    Arg4: The created CalR file. If this file exists, it is overwritten.")
 
 if __name__ == "__main__":
 
@@ -37,11 +38,6 @@ if __name__ == "__main__":
         help()
         sys.exit(1)
 
-    print("1: ", sys.argv[1])
-    print("2: ", sys.argv[2])
-    print("3: ", sys.argv[3])
-    print("4: ", sys.argv[4])
-    #sys.exit()
     out_file = sys.argv[4]
 
     with open(sys.argv[1], newline='') as f:
@@ -58,7 +54,6 @@ if __name__ == "__main__":
             for col in row:
                 i2 = i2+1
                 data1[top1[i2]].append(col)
-
 
     with open(sys.argv[2], newline='') as f:
         reader = csv.reader(f)
@@ -79,8 +74,10 @@ if __name__ == "__main__":
     data.update(data1)
     data.update(data2)
 
-    # the CalR subject IDs
-    subject_ids = sys.argv[3].split(",")
+    # the CalR subject ID common endings
+    subject_id_common_endings = sys.argv[3].split(",")
+
+    # TODO check if desired columns have different lengths and if so, warn
 
     lines = []
     matched = []
@@ -89,7 +86,7 @@ if __name__ == "__main__":
 
     #make first line from matching keys
     for k in data:
-        for sub in subject_ids:
+        for sub in subject_id_common_endings:
             if k.endswith(sub): #the CalR column header ends with a target subject ID
                 matched.append(k)
                 line += k+","
