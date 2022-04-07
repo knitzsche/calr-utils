@@ -6,8 +6,7 @@ import sys
 top1 = []
 top2 = []
 
-data1 = dict() # key is column header, val is col data list
-data2 = dict() # key is column header, val is col data list
+data = dict() # key is column header, val is col data list
 
 def help():
     print("Description:")
@@ -34,45 +33,41 @@ if __name__ == "__main__":
         if sys.argv[1] == "--help":
             help()
         sys.exit()
-    if len(sys.argv) < 5:
-        help()
-        sys.exit(1)
+    #if len(sys.argv) < 5:
+        #TODO help()
+        #sys.exit(1)
 
-    out_file = sys.argv[4]
+    in_fs = sys.argv[1]
+    g_ids = sys.argv[2]
+    out_file = sys.argv[3]
 
-    with open(sys.argv[1], newline='') as f:
-        reader = csv.reader(f)
+    calrs = [] # the list of calr dictionaries from infiles
+
+    # read all calrs on input into list of dicts
+    for f in in_fs.split(','):
+        rows = []
+        with open(f, newline='') as f:
+            i = -1
+            reader = csv.DictReader(f)
+            for row in reader: # dict with keys first row cell values
+                i = i + 1
+                rows.append(row)
+        # convert my list of dicts into a dict of lists
+        # key is header cell
+        # value is a list of the column cells
+        data.clear()
         i = -1
-        for row in reader:
-            i= i+1
-            if i == 0: #first row: column headers
-                top1=row
-                for col in top1:
-                    data1[col]=list()
-                continue
-            i2 = -1
-            for col in row:
-                i2 = i2+1
-                data1[top1[i2]].append(col)
+        for row in rows: # row is dict
+            i = i + 1
+            for key in row:
+                if i == 0:
+                    data[key] = [row[key]]
+                else:
+                    data[key].append(row[key])
+        calrs.append(data.copy()) 
 
-    with open(sys.argv[2], newline='') as f:
-        reader = csv.reader(f)
-        i = -1
-        for row in reader:
-            i= i+1
-            if i == 0: #first row: column headers
-                top2=row
-                for col in top2:
-                    data2[col]=list()
-                continue
-            i2 = -1
-            for col in row:
-                i2 = i2+1
-                data2[top2[i2]].append(col)
-
-    data = dict()
-    data.update(data1)
-    data.update(data2)
+    #print(calrs[1].keys())
+    sys.exit()
 
     # the CalR subject ID common endings
     subject_id_common_endings = sys.argv[3].split(",")
