@@ -56,9 +56,8 @@ if __name__ == "__main__":
         if i < 6: continue # because the first six columns of CalR file are not data
         s_id = str(item.split('_')[-1]) # gets last string after '_', the subject_id
         if s_id in keys.keys():
-            parts = item.split('_') 
-            base = parts[:len(parts)-1][0]
-            new_top_row[i] = str(base) + '_' + str(keys[s_id])
+            base = str(item[:-len(s_id)])
+            new_top_row[i] = str(base) + str(keys[s_id])
     #print(new_top_row)
 
     rows[0] = new_top_row.copy()
