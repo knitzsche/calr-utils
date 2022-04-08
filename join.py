@@ -37,6 +37,10 @@ if __name__ == "__main__":
         #TODO help()
         #sys.exit(1)
 
+    get_subject_ids = False
+    if "subject_ids" in sys.argv:
+        get_subject_ids = True
+
     in_fs = sys.argv[1]
     g_ids = sys.argv[2]
     out_file = sys.argv[3]
@@ -52,7 +56,7 @@ if __name__ == "__main__":
             for row in reader: # dict with keys first row cell values
                 i = i + 1
                 rows.append(row)
-        # convert my list of dicts into a dict of lists
+        # convert my per calr list of dicts into a dict of lists
         # key is header cell
         # value is a list of the column cells
         data.clear()
@@ -66,54 +70,37 @@ if __name__ == "__main__":
                     data[key].append(row[key])
         calrs.append(data.copy()) 
 
-    #print(calrs[1].keys())
-    sys.exit()
+    print(calrs[1]['vo2_1L10A'])
+    x#sys.exit()
 
-    # the CalR subject ID common endings
-    subject_id_common_endings = sys.argv[3].split(",")
+    # get the CalR subject Is'D common endings: that is, group IDs
+    group_ids = g_ids.split(",")
+    #print(group_ids)
 
-    # TODO check if desired columns have different lengths and if so, warn
+    rows.clear()
+    subject_ids = []
+    for calr in calrs:
+        for g_id in group_ids:
+            row = []
+            i = -1
+            for key in calr:
+                if key.endswith(g_id):
+                    subject_ids.append(key)
+                    i = i + 1
+                    for cell in calr[key]:
+                        row.append(cell)
+            #print(row)
+            rows.append(row.copy())
 
-    lines = []
-    matched = []
-    num_cols = len(data.keys())
-    line = ''
+    if get_subject_ids:
+        print(subject_ids)
+        sys.exit()
+ 
+    with open(out_file, 'w') as f:
+        writer = csv.writer(f)
+        writer.writerow(subject_ids)
+        #for r in final_rows:
+        #    writer.writerow(r)
+        writer.writerows(rows)
 
-    #make first line from matching keys
-    for k in data:
-        for sub in subject_id_common_endings:
-            if k.endswith(sub): #the CalR column header ends with a target subject ID
-                matched.append(k)
-                line += k+","
-    lines.append(line)
-    line = ''
-   
-    # add data
-    idx = -1
-    num_out_of_data = 0 # tracks the number of matched lists that are fully processed
-    # when num_of_data = len(matched), done: quit looping
-    while True:
-        #print(idx, num_out_of_data, len(matched)) 
-        if num_out_of_data == len(matched): break
-        idx = idx+ 1
-        for k in matched:
-            if len(data[k]) >= idx + 1:
-                line += data[k][idx] + ","
-                continue
-            else:
-                #print('sub: {} num_out_of_data {}'.format(k, num_out_of_data))
-                num_out_of_data += 1
-        lines.append(line)
-        line = ''
-                    
-    lines_final = []
-    #remove trailing comma on each line
-    for line in lines:
-        lines_final.append(line[:-1])
-    f = open(out_file, 'w')
-    for line in lines_final:
-        f.write(line)
-        f.write("\n")
-    f.flush()
-    f.close()
     sys.exit()
