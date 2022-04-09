@@ -3,25 +3,37 @@
 import csv
 import sys
 
-top1 = []
-top2 = []
-
 data = dict() # key is column header, val is col data list
 
 def help():
     print("Description:")
-    print("    The program creates a new CalR CSV file that contains the specified subject IDs' data columns.")
-    print("    Two input CalR CSV files are required.")
-    print("    Input CalR files must have column headers in this format: testname_subjectID.")
-    print("        For example: 'allmeters_14L20NA,allmeters_15L20NA,pedmeters_16L20NA,'")
-    print("        Where the tests from that are 'allmeters', and 'pedmeters'.") 
-    print("        Where the subject IDs from that are '14L20NA', '15L20NA' and '16L20NA'") 
-    print("Four args are required:")
-    print("    Args 1, 2: Input CalrR CSV files that contain data columns for the desired test_subjectID")
-    print("    Arg 3: Common *ending* of subject IDs you want included. Put them inside quote marks and delimit with commas:")
-    print("        Example: \"L5A,L10A,L15A\"")
-    print("        Note: that is the *common ending* of subject IDs. Acutal IDs could be, for example \"1L5A,2L5A,4L15A... \"")
-    print("    Arg4: The created CalR file. If this file exists, it is overwritten.")
+    print("    This program ({}) creates a new CalR CSV file that contains the all".format(sys.argv[0]))
+    print("    subject IDs that match the group IDs that you specify.")
+    print("    For example if you specify a group ID of 'L5A', the all subject IDs that end with")
+    print("    are obtained. You can think of it as a wildcard: *L5A. (Typically your specify multiple group IDs.) ")
+    print("")
+    print("    The input CalR files should already have been processed to replace numeric subject IDs, as produced")
+    print("    by default by the equipment, with meanignful subject IDs. (Another tool in this tool set does this.)")
+    print("")
+    print("    In general, the input CalR files have column headers in this format: testname_subjectID.")
+    print("        For example, three column headers: 'allmeters_14L20NA,allmeters_15L20NA,pedmeters_16L20NA,'")
+    print("        * Where the tests are 'allmeters', and 'pedmeters'.") 
+    print("        * Where the subject IDs are '14L20NA', '15L20NA' and '16L25A'") 
+    print("        * FYI, theses subject IDs imply the following group IDs: 'L20NA', 'L25A'") 
+    print("")
+    print("Arguments")
+    print("    1: A quoted string of comma-delimited group IDs, for example:")
+    print("       'L10NA,L25NA,L35NA,CTRL'") 
+    print("    2 - N:")
+    print("      Any number of paths to CalR files, for example")
+    print("      'a_calr.csv b_carl.csv c_calr.csv'")
+    print("")
+    print("Output:")
+    print("    A CalR file in the current directory named based on the specified group IDs, for example:")
+    print("    'L10NA_L25NA_L35NA_CTRL_NMR.csv'")    
+    print("")
+    print("Example:")
+    print("    {} 'L10NA,L25NA,L35NA,CTRL' 'a_calr.csv b_carl.csv c_calr.csv'".format(sys.argv[0]))
 
 if __name__ == "__main__":
 
@@ -33,44 +45,50 @@ if __name__ == "__main__":
         if sys.argv[1] == "--help":
             help()
         sys.exit()
-    #if len(sys.argv) < 5:
-        #TODO help()
-        #sys.exit(1)
 
     get_subject_ids = False
     if "subject_ids" in sys.argv:
         get_subject_ids = True
 
-    in_fs = sys.argv[1]
-    g_ids = sys.argv[2]
-    out_file = sys.argv[3]
-
-    calrs = []
-    rows = [] # list of dicts for all input files
-              # keys are header row if each input file
+    g_ids = sys.argv[1]
+    
+    # set out_file name
+    out_file = ''
+    for g_id in g_ids.split(','):
+        out_file = out_file + g_id + '_'
+    out_file = out_file[:-1] + '_CalR.csv'
+    
     # read all calrs on input each into a single list of dicts
-    if ',' in in_fs:
-        calrs = in_fs.split(',')
-    else:
-        calrs = [in_fs]
-    sheet = -1
+    calrs = []
+    rows = []
+    for f in sys.argv[2:]:
+        calrs.append(f)
+
+    # need to process sheets in from longest to shortest
+    lengths_d = {} # key length, val calrs index
+    lengths_l = []
+    i = -1 
     for f in calrs:
+        i = i + 1
+        with open(f, 'r') as f:
+            lengths_d[len(f.readlines())] = i
+            lengths_l.append(i)
+    lengths_l.sort(reverse=True)
+
+    rows = [] # list of dicts for all input files
+    sheet = -1
+    for idx in lengths_l:
+        f = calrs[idx]
         sheet = sheet + 1
         with open(f, newline='') as f:
             i = -1
             reader = csv.DictReader(f)
-            # TODO: fix this. the new source sheet is added as new row but needs to be appended to equiv row
             for row in reader: # row is dict with keys being heder row cell values
                 i = i + 1
                 if sheet == 0:
                     rows.append(row)
                 else: 
-                    if i == 0: 
-                        print('================================')
-                        print("before",len(rows[i]))
                     rows[i].update(row)
-                    if i == 0: 
-                        print("after",len(rows[i]))
 
     # get all subject_ids
     all_subject_ids = [] # superset of subject IDs from input files
@@ -78,7 +96,6 @@ if __name__ == "__main__":
         for key in row.keys():
             if key not in all_subject_ids:
                 all_subject_ids.append(key)
-    #print(all_subject_ids)
 
     # get the CalR subject IDs' common endings: that is, group IDs
     group_ids = g_ids.split(",")
