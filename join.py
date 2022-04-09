@@ -45,62 +45,71 @@ if __name__ == "__main__":
     g_ids = sys.argv[2]
     out_file = sys.argv[3]
 
-    calrs = [] # the list of calr dictionaries from infiles
-
-    # read all calrs on input into list of dicts
-    for f in in_fs.split(','):
-        rows = []
+    calrs = []
+    rows = [] # list of dicts for all input files
+              # keys are header row if each input file
+    # read all calrs on input each into a single list of dicts
+    if ',' in in_fs:
+        calrs = in_fs.split(',')
+    else:
+        calrs = [in_fs]
+    sheet = -1
+    for f in calrs:
+        sheet = sheet + 1
         with open(f, newline='') as f:
             i = -1
             reader = csv.DictReader(f)
-            for row in reader: # dict with keys first row cell values
+            # TODO: fix this. the new source sheet is added as new row but needs to be appended to equiv row
+            for row in reader: # row is dict with keys being heder row cell values
                 i = i + 1
-                rows.append(row)
-        # convert my per calr list of dicts into a dict of lists
-        # key is header cell
-        # value is a list of the column cells
-        data.clear()
-        i = -1
-        for row in rows: # row is dict
-            i = i + 1
-            for key in row:
-                if i == 0:
-                    data[key] = [row[key]]
-                else:
-                    data[key].append(row[key])
-        calrs.append(data.copy()) 
+                if sheet == 0:
+                    rows.append(row)
+                else: 
+                    if i == 0: 
+                        print('================================')
+                        print("before",len(rows[i]))
+                    rows[i].update(row)
+                    if i == 0: 
+                        print("after",len(rows[i]))
 
-    print(calrs[1]['vo2_1L10A'])
-    x#sys.exit()
+    # get all subject_ids
+    all_subject_ids = [] # superset of subject IDs from input files
+    for row in rows:
+        for key in row.keys():
+            if key not in all_subject_ids:
+                all_subject_ids.append(key)
+    #print(all_subject_ids)
 
-    # get the CalR subject Is'D common endings: that is, group IDs
+    # get the CalR subject IDs' common endings: that is, group IDs
     group_ids = g_ids.split(",")
-    #print(group_ids)
+    print('Group IDs:')
+    print(group_ids)
 
-    rows.clear()
+    # get target subject_ids
     subject_ids = []
-    for calr in calrs:
+    for s_id in all_subject_ids:
         for g_id in group_ids:
-            row = []
-            i = -1
-            for key in calr:
-                if key.endswith(g_id):
-                    subject_ids.append(key)
-                    i = i + 1
-                    for cell in calr[key]:
-                        row.append(cell)
-            #print(row)
-            rows.append(row.copy())
+            if s_id.endswith(g_id):
+                if s_id in subject_ids:
+                    print("Error, quitting: a subject ID has been found twice: ", s_id)
+                    sys.exit(1)
+                subject_ids.append(s_id) 
+    print('Subgject IDs:')
+    print(subject_ids)
 
-    if get_subject_ids:
-        print(subject_ids)
-        sys.exit()
- 
+    #remove all subject IDs that don't match group IDs
+    final = []
+    for row in rows:
+        new_row = row.copy()
+        for k in row.keys():
+            if k not in subject_ids:
+                del new_row[k]
+        final.append(new_row)
+
     with open(out_file, 'w') as f:
-        writer = csv.writer(f)
-        writer.writerow(subject_ids)
-        #for r in final_rows:
-        #    writer.writerow(r)
-        writer.writerows(rows)
+        writer = csv.DictWriter(f, dialect='excel',fieldnames=subject_ids)
+        writer.writeheader()
+        for r in final:
+            writer.writerow(r)
 
     sys.exit()
