@@ -21,6 +21,10 @@ def help():
     print("        * Where the subject IDs are '14L20NA', '15L20NA' and '16L25A'") 
     print("        * FYI, theses subject IDs imply the following group IDs: 'L20NA', 'L25A'") 
     print("")
+    print("    DateTimes: Each input CalR file has a first column of timestamps of the measurements.")
+    print("    The DateTime timestamps of all input files are assumed to be equivalent. Therefore, The timestamps")
+    print("    of the longest CalR file (the file with the most measurements) is copied into the output file.")
+    print("")
     print("Arguments")
     print("    1: A quoted string of comma-delimited group IDs, for example:")
     print("       'L10NA,L25NA,L35NA,CTRL'") 
@@ -75,7 +79,12 @@ if __name__ == "__main__":
             lengths_l.append(i)
     lengths_l.sort(reverse=True)
 
+    #headers of required first six cols
+    headers = ['Date_Time_1','envirolightlux_2','envirotemp_2','envirorh_2','envirooccupancy_2','envirosound_2']
+
     rows = [] # list of dicts for all input files
+
+    # read all calrs into rows[{}] where the dict is key: header and val: cell value
     sheet = -1
     for idx in lengths_l:
         f = calrs[idx]
@@ -86,9 +95,11 @@ if __name__ == "__main__":
             for row in reader: # row is dict with keys being heder row cell values
                 i = i + 1
                 if sheet == 0:
-                    rows.append(row)
+                    rows.append(row) # allow first six cols in first Calr, which is the longest Calr
                 else: 
-                    rows[i].update(row)
+                    for item in headers:
+                        del row[item] 
+                    rows[i].update(row) # remove first six cols in later CalRs 
 
     # get all subject_ids
     all_subject_ids = [] # superset of subject IDs from input files
@@ -108,23 +119,25 @@ if __name__ == "__main__":
         for g_id in group_ids:
             if s_id.endswith(g_id):
                 if s_id in subject_ids:
-                    print("Error, quitting: a subject ID has been found twice: ", s_id)
+                    print("Error, quitting: a subject ID has been found in more than one input CalR: ", s_id)
                     sys.exit(1)
                 subject_ids.append(s_id) 
-    print('Subgject IDs:')
+    print('Subject IDs:')
     print(subject_ids)
 
+    headers.extend(subject_ids)
+    
     #remove all subject IDs that don't match group IDs
     final = []
     for row in rows:
         new_row = row.copy()
         for k in row.keys():
-            if k not in subject_ids:
+            if k not in headers:
                 del new_row[k]
         final.append(new_row)
 
     with open(out_file, 'w') as f:
-        writer = csv.DictWriter(f, dialect='excel',fieldnames=subject_ids)
+        writer = csv.DictWriter(f, dialect='excel',fieldnames=headers)
         writer.writeheader()
         for r in final:
             writer.writerow(r)
