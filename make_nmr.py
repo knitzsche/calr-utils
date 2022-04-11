@@ -9,21 +9,28 @@ top2 = []
 
 def help():
     print("Description:")
-    print("")
+    print("-----------")
     print("This program creates an NMR file for a given Calr file and a specfied set of group IDs.")
-    print("For Calr filename must end with '_CalR.csv'")
-    print("The generated output filename replaces '_CalR' with '_NMR'.") 
+    print("The CalR filename must end with '_CalR.csv'")
+    print("The generated output filename is the same as the Calr file name except '_CalR' is replaced with '_NMR'.") 
     print("")
-    print("Weights table:")
-    print("Autmatically add a weights table to the generated NMR file by simply having a separate weights")
-    print("table CSV file in the same directory as the ..._CalR.csv file but named with '_WEIGHTS' replacing '_CalR',")
-    print("Example valid CalR filename: L25NA_L35NA_CTRL_CalR.csv")
-    print("Exiample weights filename e: L25NA_L35NA_CTRL_WEIGHTS.csv")
+    print("Optional Weights table:")
+    print("--------------")
+    print("If there is a weights table file that is named the same as the CalR file except '_CalR' is '_WEIGHTS,") 
+    print("then the weights table data is added to the generated NMR file.")
     print("")
     print("Arguments:")
+    print("---------")
     print("* 1: A string of Group Ids, comma delimited, for example: 'L25NA,L35NA,CTRL'")
     print("* 2: The input CalR csv, for example: 'L25NA_L35NA_CTRL_CalR.csv'")
-    
+    print("")
+    print("Examples:")
+    print("--------")
+    print("{} \"L5A,L10A,L15A,CTRL\" L5A_L10A_L15A_CTRL_CalR.csv".format(sys.argv[0]))
+    print("--> Optional Weights csv file: L25NA_L35NA_CTRL_WEIGHTS.csv")
+    print("'L5A_L10A_L15A_CTRL_NMR.csv' is generated.")
+    print("")
+    sys.exit(1) 
 
 if __name__ == "__main__":
 
@@ -45,13 +52,13 @@ if __name__ == "__main__":
 
     #calculate weights table filename from CalR filename
     weights_f = calr_f.replace('_CalR','_WEIGHTS')
+    print(" ==== ", weights_f)
     weights = False # do not process weights by default
-    weights_len = 0
+    weights_length = 0
     try:
-        f = open(weights_f)
         weights = True
         with open(weights_f) as f:
-            weights_length = len(weights_f.readlines())
+            weights_length = len(f.readlines())
     except:
         print("NOTE: No {} file found. Not adding a weight table".format(weights_f))
 
@@ -160,18 +167,22 @@ if __name__ == "__main__":
     # data rows starting at row[1]. So if rows is is long as the number of target subject IDs
     # we'd not be able to do the appends
 
-    # get number of rows to add to rowsi[]: 
-    # weights table will have a row for every target subject ID 
+    # get number of rows to add to rows[]: 
+    # weights table should have a row for every target subject ID 
     # it will be added to the right of current data
     # therefore the rows to add = target subject_ids - number rows
-    rows_to_add = len(target_subject_ids) - len(rows)
+    rows_to_add = len(target_subject_ids) - len(rows) + 1
+    print(target_subject_ids)
+    print('len(rows)', len(rows))
+    print('len(target_subject_ids)',len(target_subject_ids))
+    print('rows_to_add', rows_to_add)
+    #sys.exit()
     # each row is idx, "NA", "NA"...
     for idx in range(rows_to_add):
         i = -1
         row = {}
         for col in rows[0].keys():
             i = i + 1
-            print('idx',idx,'i',i)
             if i == 0:
                 row[col] = len(rows)
                 continue
@@ -179,7 +190,7 @@ if __name__ == "__main__":
                 row[col] = "NA"  
         rows.append(row)
     
-    # set additoinal values
+    # set additional values
     rows[1]['xrange'] = 0
     rows[2]['xrange'] = calr_length
     rows[1]['outliers'] = 'Yes'
@@ -190,18 +201,34 @@ if __name__ == "__main__":
 
     for row in rows[1:]:
         row['exc'] = calr_length
-        
-    
+    print('weights_length',weights_length) 
+    if weights:
+        if weights_length < len(rows):
+            print("======================================================================")
+            print("ERROR: The weights table does TOO FEW ROWS.") 
+            print("There should be one from row for every subject ID.")
+            print("----> Your CalR file has {} subects".format(len(target_subject_ids)))
+            print("----> But your WEIGHTs table has {} rows of data.".format(weights_length-1))
+            print("If this is intentional, edit the the generated NMR csv file as needed.")
+            print("======================================================================")
+        elif weights_length > len(rows):
+            print("======================================================================")
+            print("ERROR: The weights table hase TOO MANY ROWS.") 
+            print("There should be one from row for every subject ID.")
+            print("----> Your CalR file has {} subects".format(len(target_subject_ids)))
+            print("----> But your WEIGHTs table has {} rows of data.".format(weights_length-1))
+            print("Please fix the WEIGHTS table file and try again")
+            print("======================================================================")
+            sys.exit(1)
 
-    #if weights:
-        
-        
-    #for row in rows[1:]: # don't touch first row
-    #    print('xrange',row['xrange'])
-    #    for col in row.keys():
-    #        #print(col) 
-    #        if row[col] == '':
-    #            row[col] = 'NA'
+        cols = {'Total.Mass':'Total.Mass','Lean.Mass':'Lean.Mass','Fat.Mass':'Fat.Mass','id':'id'}
+        rows[0].update(cols)
+        with open(weights_f) as csvfile:
+            reader = csv.DictReader(csvfile)
+            i = 0
+            for row in reader:
+                i = i + 1
+                rows[i].update(row)
 
     with open(out_file, 'w') as f:
         fieldnames=rows[0]
