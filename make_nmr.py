@@ -205,7 +205,7 @@ if __name__ == "__main__":
     if weights:
         if weights_length < len(rows):
             print("======================================================================")
-            print("ERROR: The weights table does TOO FEW ROWS.") 
+            print("ERROR: The weights table has TOO FEW ROWS.") 
             print("There should be one from row for every subject ID.")
             print("----> Your CalR file has {} subects".format(len(target_subject_ids)))
             print("----> But your WEIGHTs table has {} rows of data.".format(weights_length-1))
@@ -213,7 +213,7 @@ if __name__ == "__main__":
             print("======================================================================")
         elif weights_length > len(rows):
             print("======================================================================")
-            print("ERROR: The weights table hase TOO MANY ROWS.") 
+            print("ERROR: The weights table has TOO MANY ROWS.") 
             print("There should be one from row for every subject ID.")
             print("----> Your CalR file has {} subects".format(len(target_subject_ids)))
             print("----> But your WEIGHTs table has {} rows of data.".format(weights_length-1))
