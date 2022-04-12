@@ -16,6 +16,7 @@ def help():
     print("    * col 2 is the desired subject ID")
     print("The program finds every default subject ID in the heaader (the first row) and ")
     print("changes it to the desired subject ID based on the provided key file")
+    sys.exit(0)
 
 if __name__ == "__main__":
 
