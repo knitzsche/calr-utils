@@ -85,8 +85,7 @@ Note: The date time values are taking from one of raw CalR files. The date time 
 
 Note: Currently, the tool requires that the raw/input CalR files be listed on the command lists the longest (in lines) CalR file last.
 
-Generating the NMR file
-----------------------
+# Generating the NMR file
 
 make_nmr.py
 
