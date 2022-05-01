@@ -1,5 +1,5 @@
-Calr-Utils Introduction
------------------------
+# Calr-Utils Introduction
+
 
 Here are some python scripts that help with CalR and NMR CSV files for https://calrapp.org/.
 
@@ -8,7 +8,15 @@ Terms:
 * Group ID: a group of mice where the ID is the common part of the subject ID ending:
 * Two mice: 3L25NA 5L25NA are both in group L25NA
 
-The scripts require python 3.8 (or possibly higher). 
+The tools allow converting a default CalR file with default numeric subject IDs to be processed into new CalR files that use meaningful subject IDs/group IDs. Then you can create a new CalR file by specifiying the desired group IDs and a set of group IDs: the data for all subjects that match the group IDs are obtained from the specified CalR files and placed in a new CalR file, where the datetimes (timestamps) are pulled from the longest of the specified/input CalR files. Then, you create a correctly named Weights CSV file 9see below) and use another tool to create the NMR file for the specified CalR file.  
+
+So, the purpose is to convert default CalR files with meaningless subject IDs into files with corrected, meaningful subject IDs, then to create from then a new (final) CalR from any set of them by specifing the groups you want. Then, automatically creating a valid NMR file by supplying only a Weiths table that contains the correct subject IDs (error are reported).
+
+Note that the burden of ensuring data consistency is on the human being using these tools. That is, the assumption is that the timestamps of tests are equivalent among the CalR source files. 
+
+The scripts require python 3.X (possibly 3.8) or higher. 
+
+## Help
 
 Each script has help that is displayed with ‘-h’ flag.
 
@@ -17,14 +25,13 @@ Three python scripts:
 * join.py
 * make_nmr.py
 
-Fixing default subject IDs to meaningful IDs
---------------------------------------------
+# Fixing default subject IDs to meaningful IDs
 
 subject_ids.py
 
-Our CalR machine generates CalR files with mouse subject IDs as simple numbers. For example: “vo2_3” where the test name is “vo2” and the subject ID is “3”. 
+Our target CalR machine generates CalR files with mouse subject IDs as simple numbers. For example: “vo2_3” where the test name is “vo2” and the subject ID is “3”. 
 
-It is useful to have meaningful subject IDs. 
+It is useful to have meaningful subject IDs in the CalR files because later the file can be read and understood without needing a separate map indicating which number is for which subject. 
 
 The subect_ids.py script fixes this. It requires  a “key” file that simply maps the default subject IDs from the raw CalR file to the desired, meaningful subject IDs. 
 
@@ -56,8 +63,7 @@ $ path/to/subject_ids.py raw_short_CalR.csv keys_short.csv fixed_short_CalR.csv
 
 That uses the keys_short.csv file to generate fixed_short_CalR.csv from raw_short_CalR.csv file. 
 
-Combining data from multiple CalR files
----------------------------------------
+# Combining data from multiple CalR files
 
 join.py
 
@@ -77,6 +83,8 @@ $ path/to/join.py 'L5A,L10A,L15A,CTRL' two_CalR.csv short_Calr.csv three_CalR.cs
 
 Note: The date time values are taking from one of raw CalR files. The date time values are assumed to apply validly to all raw CalR files.
 
+Note: Currently, the tool requires that the raw/input CalR files be listed on the command lists the longest (in lines) CalR file last.
+
 Generating the NMR file
 ----------------------
 
@@ -91,7 +99,6 @@ For example:
 * Weights filename: L5A_L10A_L15A_CTRL_WEIGHTS.csv
 * Generated NMR file: L5A_L10A_L15A_CTRL_NMR.csv
 
-If the properly named WEIGHTS file does not exist, the generated NMR file does not contain any weights table data. It can of course be added manually. 
 Note: If there are too few Subject IDs in the WEIGHTs file for the subject IDs contained in the CalR file, an ERROR message displays. If this is intentional, you need to edit the generated NMR file to remove the excess partial rows at the bottom of the file. 
 
 Note: If the WEIGHTS file contains subject IDs that are not found in the CalR file, this is a logical error, and the program displays an error and stops. You must edit the WEIGHTs file to remove the extra subject IDs, or use a CalR file that contains them all. 
