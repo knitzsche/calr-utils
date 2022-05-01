@@ -32,6 +32,9 @@ def help():
     print("      Any number of paths to CalR files, for example")
     print("      'a_calr.csv b_carl.csv c_calr.csv'")
     print("")
+    print("      'Note: Currently you must list the CalR files on the command line from shortest to longest.'")
+    print("      '------------------------------------------------------------------------------------------'")
+    print("")
     print("Output:")
     print("    A CalR file in the current directory named based on the specified group IDs, for example:")
     print("    'L10NA_L25NA_L35NA_CTRL_NMR.csv'")    
@@ -68,6 +71,9 @@ if __name__ == "__main__":
     for f in sys.argv[2:]:
         calrs.append(f)
 
+    print("All input CalR files")
+    print(calrs)
+
     # need to process sheets in from longest to shortest
     lengths_d = {} # key length, val calrs index
     lengths_l = []
@@ -85,6 +91,7 @@ if __name__ == "__main__":
     rows = [] # list of dicts for all input files
 
     # read all calrs into rows[{}] where the dict is key: header and val: cell value
+    # TODO calr file names currently MUST be entered on command line longest LAST
     sheet = -1
     for idx in lengths_l:
         f = calrs[idx]
@@ -107,11 +114,13 @@ if __name__ == "__main__":
         for key in row.keys():
             if key not in all_subject_ids:
                 all_subject_ids.append(key)
+    #print('All subject IDs')
+    #print(all_subject_ids)
 
     # get the CalR subject IDs' common endings: that is, group IDs
     group_ids = g_ids.split(",")
-    print('Group IDs:')
-    print(group_ids)
+    #print('Group IDs:')
+    #print(group_ids)
 
     # get target subject_ids
     subject_ids = []
@@ -122,7 +131,7 @@ if __name__ == "__main__":
                     print("Error, quitting: a subject ID has been found in more than one input CalR: ", s_id)
                     sys.exit(1)
                 subject_ids.append(s_id) 
-    print('Subject IDs:')
+    print('Found subject IDs for specified Group IDs:')
     print(subject_ids)
 
     headers.extend(subject_ids)
