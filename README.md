@@ -8,7 +8,7 @@ Terms:
 * Group ID: a group of mice where the ID is the common part of the subject ID ending:
 * Two mice: 3L25NA 5L25NA are both in group L25NA
 
-The tools allow converting a default CalR file with default numeric subject IDs to be processed into new CalR files that use meaningful subject IDs/group IDs. Then you can create a new CalR file by specifiying the desired group IDs and a set of group IDs: the data for all subjects that match the group IDs are obtained from the specified CalR files and placed in a new CalR file, where the datetimes (timestamps) are pulled from the longest of the specified/input CalR files. Then, you create a correctly named Weights CSV file 9see below) and use another tool to create the NMR file for the specified CalR file.  
+The tools allow converting a default CalR file with default numeric subject IDs to be processed into new CalR files that use meaningful subject IDs/group IDs. Then you can create a new CalR file by specifiying the desired group IDs and a set of CalR files: the data for all subjects that match the group IDs are obtained from the specified CalR files and placed in a new CalR file, where the datetimes (timestamps) are pulled from the longest of the specified/input CalR files. Then, you create a correctly named Weights CSV file 9see below) and use another tool to create the NMR file for the specified CalR file.  
 
 So, the purpose is to convert default CalR files with meaningless subject IDs into files with corrected, meaningful subject IDs, then to create from then a new (final) CalR from any set of them by specifing the groups you want. Then, automatically creating a valid NMR file by supplying only a Weiths table that contains the correct subject IDs (error are reported).
 
