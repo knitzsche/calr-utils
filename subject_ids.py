@@ -8,14 +8,17 @@ top2 = []
 
 
 def help():
-    print("arg 1 is input CalR csv")
-    print("arg 2 is the corresponding csv key file")
-    print("arg 3 is the NEW CalR csv file")
-    print("The key file has two columns: ")
+    print("Arg 1: a RAW CalR csv file with default subject IDs.")
+    print("Arg 2: a mapping file (see below)")
+    print("Arg 3: the name of the FIXED CalR csv file")
+    print("")
+    print("The mapping file has two columns: ")
     print("    * col 1 is a default subject ID in the CalR file, typically a simple number")
     print("    * col 2 is the desired subject ID")
-    print("The program finds every default subject ID in the heaader (the first row) and ")
-    print("changes it to the desired subject ID based on the provided key file")
+    print("")
+    print("The program finds every subject ID in the header (the first row) ")
+    print("of the RAW CalR file and changes it as specied in the mapping file,")
+    print("producing a new (FIXED) CalR file as specified.")
     sys.exit(0)
 
 if __name__ == "__main__":
