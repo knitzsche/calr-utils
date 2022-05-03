@@ -10,7 +10,7 @@ top2 = []
 def help():
     print("arg 1 is input CalR csv")
     print("arg 2 is the corresponding csv key file")
-    print("arg 3 is the NEW CalR csv key file")
+    print("arg 3 is the NEW CalR csv file")
     print("The key file has two columns: ")
     print("    * col 1 is a default subject ID in the CalR file, typically a simple number")
     print("    * col 2 is the desired subject ID")
