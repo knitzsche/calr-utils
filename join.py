@@ -32,15 +32,14 @@ def help():
     print("      Any number of paths to CalR files, for example")
     print("      'a_calr.csv b_carl.csv c_calr.csv'")
     print("")
-    print("      'Note: Currently you must list the CalR files on the command line from shortest to longest.'")
-    print("      '------------------------------------------------------------------------------------------'")
+    print("      'NOTE: Currently you must list the CalR files on the command line from shortest to longest.'")
     print("")
     print("Output:")
     print("    A CalR file in the current directory named based on the specified group IDs, for example:")
     print("    'L10NA_L25NA_L35NA_CTRL_NMR.csv'")    
     print("")
     print("Example:")
-    print("    {} 'L10NA,L25NA,L35NA,CTRL' 'a_calr.csv b_carl.csv c_calr.csv'".format(sys.argv[0]))
+    print("    {} 'L10NA,L25NA,L35NA,CTRL' a_calr.csv b_carl.csv c_calr.csv".format(sys.argv[0]))
 
 if __name__ == "__main__":
 
